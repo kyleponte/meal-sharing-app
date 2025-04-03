@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Browse Meals</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <h2>Available Meals</h2>
+  {% for meal in meals %}
+    <div class="meal-card">
+      <strong>Host:</strong> {{ meal.host_name }}<br>
+      <strong>Location:</strong> {{ meal.location }}<br>
+      <strong>Time:</strong> {{ meal.time }}<br>
+      <strong>Fee:</strong> ${{ meal.fee }} per person<br>
+      <strong>Max Guests:</strong> {{ meal.max_guests }}<br>
+      <strong>Dishes:</strong>
+      <ul>
+        {% for dish in meal.dishes %}
+          <li>{{ dish.course_type.title() }} - {{ dish.name }} ({{ dish.ingredients | join(', ') }})</li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endfor %}
+  <a href="/">← Back</a>
+</body>
+</html>
