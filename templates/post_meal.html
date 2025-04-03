@@ -5,29 +5,33 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-  <h2>Post a Meal Invitation</h2>
-  <form method="post">
-    Host Name: <input name="host"><br>
-    Location: <input name="location"><br>
-    Date: <input type="date" name="meal_date"><br>
-    Time: <input type="time" name="meal_time"><br>
-    Max Guests: <input name="max_guests" type="number"><br>
-    Fee per Guest: <input name="fee"><br>
-    Active Hours: <input name="active_hours"><br><br>
+  <div class="center">
+    <div class="card">
+      <h2>Post a Meal Invitation</h2>
+      <form method="post">
+        Host Name: <input name="host"><br>
+        Location: <input name="location"><br>
+        Date: <input type="date" name="meal_date"><br>
+        Time: <input type="time" name="meal_time"><br>
+        Max Guests: <input name="max_guests" type="number"><br>
+        Fee per Guest: <input name="fee"><br>
+        Active Hours: <input name="active_hours"><br><br>
+    </div>
+    <div class= "card">
+        <h3>Dishes</h3>
+        Appetizer Name: <input name="dish1_name"><br>
+        Ingredients: <input name="dish1_ingredients"><br>
 
-    <h3>Dishes</h3>
-    Appetizer Name: <input name="dish1_name"><br>
-    Ingredients: <input name="dish1_ingredients"><br>
+        Main Entree Name: <input name="dish2_name"><br>
+        Ingredients: <input name="dish2_ingredients"><br>
 
-    Main Entree Name: <input name="dish2_name"><br>
-    Ingredients: <input name="dish2_ingredients"><br>
+        Dessert Name: <input name="dish3_name"><br>
+        Ingredients: <input name="dish3_ingredients"><br><br>
+    </div>
+      <button type="submit">Post Meal</button>
+    </form>
 
-    Dessert Name: <input name="dish3_name"><br>
-    Ingredients: <input name="dish3_ingredients"><br><br>
-
-    <button type="submit">Post Meal</button>
-  </form>
-
-  <a href="/" style="display:inline-block; margin-top:20px;">← Back to Home</a>
+    <a href="/" style="display:inline-block; margin-top:20px;">← Back to Home</a>
+  </div>
 </body>
 </html>
