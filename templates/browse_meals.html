@@ -17,7 +17,7 @@
         <strong>Dishes:</strong>
         <ul>
           {% for dish in meal.dishes %}
-            <li>{{ dish.course_type.title() }} - {{ dish.name }} ({{ dish.ingredients | join(', ') }})</li>
+            <li>{{ dish.course_type.title() }} - {{ dish.name }} ({{ dish.ingredients }})</li>
           {% endfor %}
         </ul>
       </div>
