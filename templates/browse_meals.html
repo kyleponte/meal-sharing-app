@@ -7,9 +7,16 @@
 <body>
   <div class="center">
     <h2>Available Meals</h2>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
     {% for meal in meals %}
       <div class="meal-card">
-        <strong>Host:</strong> {{ meal.host_name }}<br>
+        <strong>Host:</strong> {{ meal.host.username }}<br>
         <strong>Location:</strong> {{ meal.location }}<br>
         <strong>Time:</strong> {{ meal.time }}<br>
         <strong>Fee:</strong> ${{ meal.fee }} per person<br>
@@ -20,6 +27,11 @@
             <li>{{ dish.course_type.title() }} - {{ dish.name }} ({{ dish.ingredients }})</li>
           {% endfor %}
         </ul>
+        {% if session.get('user_id') == meal.host_id %}
+          <form method="POST" action="{{ url_for('delete_meal', meal_id=meal.id) }}" class="delete-form">
+            <button type="submit" class="delete-button" onclick="return confirm('Are you sure you want to delete this meal?')">Delete Meal</button>
+          </form>
+        {% endif %}
       </div>
     {% endfor %}
     <a href="/">← Back</a>
