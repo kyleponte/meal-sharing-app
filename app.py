@@ -9,13 +9,15 @@ from functools import wraps
 load_dotenv()
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'your-secret-key-here')  # For session management
-db = SQLAlchemy(app)
+# Fix for Supabase connection string format
+database_url = os.getenv('DATABASE_URL')
+if database_url and database_url.startswith('postgres://'):
+    database_url = database_url.replace('postgres://', 'postgresql://', 1)
 
-# Add debug logging
-print(f"Database URI: {app.config['SQLALCHEMY_DATABASE_URI']}")
+app.config['SQLALCHEMY_DATABASE_URI'] = database_url
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'your-secret-key-here')
+db = SQLAlchemy(app)
 
 # --------- Data Classes ---------
 class User(db.Model):
@@ -174,7 +176,6 @@ def delete_meal(meal_id):
     return redirect(url_for('browse_meals'))
 
 with app.app_context():
-    # Only create tables if they don't exist
     db.create_all()
 
 if __name__ == '__main__':
