@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Post a Meal</title>
+  <title>Edit Meal</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
   <style>
     .dish-container {
@@ -28,39 +28,40 @@
 </head>
 <body>
   <div class="center">
-    <h2>Post a Meal</h2>
-    <form method="POST" action="{{ url_for('post_meal') }}" id="mealForm">
+    <h2>Edit: {{ meal.name }}</h2>
+    <form method="POST" action="{{ url_for('edit_meal', meal_id=meal.id) }}" id="mealForm">
       <div class="form-group">
         <label for="name">Meal Name:</label>
-        <input type="text" id="name" name="name" required>
+        <input type="text" id="name" name="name" value="{{ meal.name }}" required>
       </div>
       <div class="form-group">
         <label for="location">Location:</label>
-        <input type="text" id="location" name="location" required>
+        <input type="text" id="location" name="location" value="{{ meal.location }}" required>
       </div>
       <div class="form-group">
         <label for="meal_date">Date:</label>
-        <input type="date" id="meal_date" name="meal_date" required>
+        <input type="date" id="meal_date" name="meal_date" value="{{ meal.time.strftime('%Y-%m-%d') }}" required>
       </div>
       <div class="form-group">
         <label for="meal_time">Time:</label>
-        <input type="time" id="meal_time" name="meal_time" required>
+        <input type="time" id="meal_time" name="meal_time" value="{{ meal.time.strftime('%H:%M') }}" required>
       </div>
       <div class="form-group">
         <label for="max_guests">Maximum Guests:</label>
-        <input type="number" id="max_guests" name="max_guests" min="1" required>
+        <input type="number" id="max_guests" name="max_guests" value="{{ meal.max_guests }}" min="1" required>
       </div>
       <div class="form-group">
         <label for="fee">Fee per Person ($):</label>
-        <input type="number" id="fee" name="fee" min="0" step="0.01" required>
+        <input type="number" id="fee" name="fee" value="{{ meal.fee }}" min="0" step="0.01" required>
       </div>
       <div class="form-group">
         <label for="active_until">Active Until:</label>
-        <input type="datetime-local" id="active_until" name="active_until" required>
+        <input type="datetime-local" id="active_until" name="active_until" value="{{ meal.active_until.strftime('%Y-%m-%dT%H:%M') }}" required>
       </div>
+
       <div class="form-group">
         <label for="description">Additional Information (Optional):</label>
-        <textarea id="description" name="description" rows="4" style="width: 100%;"></textarea>
+        <textarea id="description" name="description" rows="4" style="width: 100%;">{{ meal.description or '' }}</textarea>
         <small>Optional: Add any additional details about the meal, such as dietary restrictions, special instructions, or other relevant information.</small>
       </div>
 
@@ -69,24 +70,29 @@
         <div class="dish-container" id="{{ course }}-container">
           <h4>{{ course|title }}</h4>
           <div class="dishes" id="{{ course }}-dishes">
-            <div class="dish-form">
-              <div class="form-group">
-                <label for="{{ course }}_name_0">Dish Name:</label>
-                <input type="text" id="{{ course }}_name_0" name="{{ course }}_name[]" required>
+            {% for dish in meal.dishes if dish.course_type == course %}
+              <div class="dish-form">
+                <div class="form-group">
+                  <label for="{{ course }}_name_{{ loop.index0 }}">Dish Name:</label>
+                  <input type="text" id="{{ course }}_name_{{ loop.index0 }}" name="{{ course }}_name[]" value="{{ dish.name }}" required>
+                </div>
+                <div class="form-group">
+                  <label for="{{ course }}_ingredients_{{ loop.index0 }}">Ingredients:</label>
+                  <input type="text" id="{{ course }}_ingredients_{{ loop.index0 }}" name="{{ course }}_ingredients[]" value="{{ dish.ingredients }}" required>
+                  {% if not loop.first %}
+                    <span class="remove-dish" onclick="removeDish(this)">✕</span>
+                  {% endif %}
+                </div>
               </div>
-              <div class="form-group">
-                <label for="{{ course }}_ingredients_0">Ingredients:</label>
-                <input type="text" id="{{ course }}_ingredients_0" name="{{ course }}_ingredients[]" required>
-              </div>
-            </div>
+            {% endfor %}
           </div>
           <button type="button" class="add-dish" onclick="addDish('{{ course }}')">Add {{ course|title }}</button>
         </div>
       {% endfor %}
 
-      <button type="submit">Post Meal</button>
+      <button type="submit">Update Meal</button>
     </form>
-    <a href="/">← Back</a>
+    <a href="{{ url_for('meal_details', meal_id=meal.id) }}">← Back to Meal Details</a>
   </div>
 
   <script>
@@ -117,4 +123,4 @@
     }
   </script>
 </body>
-</html>
+</html> 

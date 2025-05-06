@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Meal Details</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    .meal-details {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #ffffff;
+    }
+    .dish-list {
+      margin: 20px 0;
+    }
+    .dish-item {
+      background-color: #ffffff;
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 8px;
+      border: 1px solid #e0e0e0;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .course-section {
+      margin: 20px 0;
+    }
+    .meal-info {
+      background-color: #ffffff;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      border: 1px solid #e0e0e0;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .action-buttons {
+      margin-top: 20px;
+    }
+    .action-buttons a {
+      margin-right: 10px;
+    }
+    .guest-list {
+      margin: 20px 0;
+      padding: 20px;
+      background-color: #ffffff;
+      border-radius: 8px;
+      border: 1px solid #e0e0e0;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .rsvp-section {
+      margin: 20px 0;
+      padding: 20px;
+      background-color: #ffffff;
+      border-radius: 8px;
+      border: 1px solid #e0e0e0;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .rsvp-status {
+      font-weight: bold;
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 4px;
+    }
+    .rsvp-status.pending {
+      background-color: #fff3cd;
+      color: #856404;
+      border: 1px solid #ffeeba;
+    }
+    .rsvp-status.confirmed {
+      background-color: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    .rsvp-status.rejected {
+      background-color: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+    .guest-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px;
+      margin: 5px 0;
+      background-color: #f8f9fa;
+      border-radius: 4px;
+    }
+    .description-section {
+      margin: 20px 0;
+      padding: 20px;
+      background-color: #ffffff;
+      border-radius: 8px;
+      border: 1px solid #e0e0e0;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .button {
+      padding: 8px 16px;
+      border-radius: 4px;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .button.primary {
+      background-color: #007bff;
+      color: white;
+    }
+    .button.danger {
+      background-color: #dc3545;
+      color: white;
+    }
+    .button.secondary {
+      background-color: #6c757d;
+      color: white;
+    }
+    .capacity-full {
+      background-color: #f8d7da;
+      color: #721c24;
+      padding: 10px;
+      border-radius: 4px;
+      margin: 10px 0;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.4);
+    }
+    .modal-content {
+      background-color: #fefefe;
+      margin: 15% auto;
+      padding: 20px;
+      border: 1px solid #888;
+      width: 80%;
+      max-width: 500px;
+      border-radius: 8px;
+    }
+    .close {
+      color: #aaa;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .star-rating {
+      display: inline-flex;
+      flex-direction: row-reverse;
+      font-size: 1.5em;
+    }
+    .star-rating input {
+      display: none;
+    }
+    .star-rating label {
+      color: #ddd;
+      cursor: pointer;
+      padding: 0 0.1em;
+    }
+    .star-rating label:hover,
+    .star-rating label:hover ~ label,
+    .star-rating input:checked ~ label {
+      color: #ffd700;
+    }
+    .rating-stars {
+      color: #ffd700;
+    }
+  </style>
+</head>
+<body>
+  <div class="meal-details">
+    <h2>{{ meal.name }}</h2>
+    
+    <div class="meal-info">
+      <h3>Basic Information</h3>
+      <p><strong>Location:</strong> {{ meal.location }}</p>
+      <p><strong>Date:</strong> {{ meal.time.strftime('%Y-%m-%d') }}</p>
+      <p><strong>Time:</strong> {{ meal.time.strftime('%H:%M') }}</p>
+      <p><strong>Maximum Guests:</strong> {{ meal.max_guests }}</p>
+      <p><strong>Current Guests:</strong> {{ meal.get_guest_count() }}/{{ meal.max_guests }}</p>
+      <p><strong>Fee per Person:</strong> ${{ "%.2f"|format(meal.fee) }}</p>
+      <p><strong>Active Until:</strong> {{ meal.active_until.strftime('%Y-%m-%d %H:%M') }}</p>
+      <p><strong>Status:</strong> {% if meal.is_active() %}Active{% else %}Expired{% endif %}</p>
+    </div>
+
+    {% if meal.description %}
+    <div class="description-section">
+      <h3>Additional Information</h3>
+      <p>{{ meal.description }}</p>
+    </div>
+    {% endif %}
+
+    <div class="dish-list">
+      <h3>Menu</h3>
+      
+      {% for course in ['appetizer', 'main', 'dessert'] %}
+        <div class="course-section">
+          <h4>{{ course|title }}</h4>
+          {% for dish in meal.dishes if dish.course_type == course %}
+            <div class="dish-item">
+              <p><strong>Name:</strong> {{ dish.name }}</p>
+              <p><strong>Ingredients:</strong> {{ dish.ingredients }}</p>
+            </div>
+          {% endfor %}
+        </div>
+      {% endfor %}
+    </div>
+
+    {% if is_host %}
+      <div class="guest-list">
+        <h3>Guest List</h3>
+        {% if confirmed_guests %}
+          {% for guest in confirmed_guests %}
+            <div class="guest-item">
+              <span>
+                <a href="{{ url_for('user_profile', user_id=guest.id) }}">{{ guest.username }}</a>
+                {% if guest.get_guest_rating() %}
+                  <span class="rating-stars">
+                    {% for _ in range(guest.get_guest_rating()|round|int) %}★{% endfor %}
+                    {% for _ in range(5 - guest.get_guest_rating()|round|int) %}☆{% endfor %}
+                  </span>
+                {% endif %}
+              </span>
+              <div>
+                {% if user.can_rate_guest(guest, meal) %}
+                  <button onclick="showRatingForm('guest', {{ guest.id }})" class="button">Rate Guest</button>
+                {% endif %}
+                <form action="{{ url_for('remove_guest', rsvp_id=guest.rsvps[0].id) }}" method="POST" style="display: inline;">
+                  <button type="submit" class="button danger" onclick="return confirm('Are you sure you want to remove this guest?')">Remove</button>
+                </form>
+              </div>
+            </div>
+          {% endfor %}
+        {% else %}
+          <p>No confirmed guests yet.</p>
+        {% endif %}
+
+        <h4>Pending RSVPs</h4>
+        {% for rsvp in meal.guests if rsvp.status == 'pending' %}
+          <div class="rsvp-item">
+            <p>{{ rsvp.guest.username }} wants to join</p>
+            <form action="{{ url_for('confirm_rsvp', rsvp_id=rsvp.id) }}" method="POST" style="display: inline;">
+              <button type="submit" class="button primary">Confirm</button>
+            </form>
+            <form action="{{ url_for('reject_rsvp', rsvp_id=rsvp.id) }}" method="POST" style="display: inline;">
+              <button type="submit" class="button danger">Reject</button>
+            </form>
+          </div>
+        {% else %}
+          <p>No pending RSVPs.</p>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    {% if not is_host and session.get('user_id') %}
+      <div class="rsvp-section">
+        {% if current_rsvp %}
+          <div class="rsvp-status {{ current_rsvp.status }}">
+            Your RSVP status: {{ current_rsvp.status|title }}
+            {% if current_rsvp.status == 'confirmed' and user.can_rate_host(meal) %}
+              <button onclick="showRatingForm('host', {{ meal.host_id }})" class="button">Rate Host</button>
+            {% endif %}
+          </div>
+        {% elif meal.is_active() and meal.can_accept_more_guests() %}
+          <form action="{{ url_for('rsvp_meal', meal_id=meal.id) }}" method="POST">
+            <button type="submit" class="button primary">RSVP to this meal</button>
+          </form>
+        {% elif not meal.is_active() %}
+          <p>This meal is no longer active.</p>
+        {% elif not meal.can_accept_more_guests() %}
+          <div class="capacity-full">
+            <p>This meal is full.</p>
+          </div>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    <!-- Rating Modal -->
+    <div id="ratingModal" class="modal" style="display: none;">
+      <div class="modal-content">
+        <span class="close" onclick="closeRatingModal()">&times;</span>
+        <h3>Submit Rating</h3>
+        <form id="ratingForm" method="POST">
+          <input type="hidden" id="rating_type" name="rating_type">
+          <div class="form-group">
+            <label>Rating:</label>
+            <div class="star-rating">
+              {% for i in range(5, 0, -1) %}
+                <input type="radio" id="star{{ i }}" name="rating" value="{{ i }}" required>
+                <label for="star{{ i }}">★</label>
+              {% endfor %}
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="comment">Comment (Optional):</label>
+            <textarea id="comment" name="comment" rows="4" style="width: 100%;"></textarea>
+          </div>
+          <button type="submit" class="button primary">Submit Rating</button>
+        </form>
+      </div>
+    </div>
+
+    {% if is_host %}
+      <div class="action-buttons">
+        <a href="{{ url_for('edit_meal', meal_id=meal.id) }}" class="button primary">Edit Meal</a>
+        <form action="{{ url_for('delete_meal', meal_id=meal.id) }}" method="POST" style="display: inline;">
+          <button type="submit" class="button danger" onclick="return confirm('Are you sure you want to delete this meal?')">Delete Meal</button>
+        </form>
+      </div>
+    {% endif %}
+
+    <a href="{{ url_for('browse_meals') }}" class="button secondary">← Back to Meals</a>
+  </div>
+
+  <script>
+    function showRatingForm(type, userId) {
+      document.getElementById('ratingModal').style.display = 'block';
+      document.getElementById('rating_type').value = type;
+      document.getElementById('ratingForm').action = `{{ url_for('rate_user', meal_id=meal.id, rated_user_id=0) }}`.replace('0', userId);
+    }
+
+    function closeRatingModal() {
+      document.getElementById('ratingModal').style.display = 'none';
+    }
+
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+      if (event.target == document.getElementById('ratingModal')) {
+        closeRatingModal();
+      }
+    }
+  </script>
+</body>
+</html> 

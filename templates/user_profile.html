@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>{{ user.username }}'s Profile</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    .profile-container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .profile-section {
+      background-color: #ffffff;
+      padding: 20px;
+      margin-bottom: 20px;
+      border-radius: 8px;
+      border: 1px solid #e0e0e0;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .rating-stars {
+      color: #ffd700;
+      font-size: 1.2em;
+    }
+    .rating-count {
+      color: #666;
+      font-size: 0.9em;
+    }
+    .meal-list {
+      list-style: none;
+      padding: 0;
+    }
+    .meal-item {
+      padding: 10px;
+      margin: 5px 0;
+      background-color: #f8f9fa;
+      border-radius: 4px;
+    }
+    .rating-item {
+      padding: 15px;
+      margin: 10px 0;
+      background-color: #f8f9fa;
+      border-radius: 4px;
+    }
+    .rating-comment {
+      margin-top: 5px;
+      font-style: italic;
+      color: #666;
+    }
+    .rating-meta {
+      font-size: 0.9em;
+      color: #888;
+      margin-top: 5px;
+    }
+    .edit-profile {
+      margin-top: 10px;
+    }
+    .bio {
+      white-space: pre-wrap;
+      margin: 10px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="profile-container">
+    <div class="profile-section">
+      <h2>{{ user.username }}'s Profile</h2>
+      {% if user.bio %}
+        <div class="bio">{{ user.bio }}</div>
+      {% endif %}
+      
+      {% if is_own_profile %}
+        <div class="edit-profile">
+          <a href="{{ url_for('edit_profile') }}" class="button">Edit Profile</a>
+        </div>
+      {% endif %}
+    </div>
+
+    {% if user.has_hosted_meals() %}
+      <div class="profile-section">
+        <h3>Host Rating</h3>
+        {% set host_rating = user.get_host_rating() %}
+        {% if host_rating %}
+          <div class="rating-stars">
+            {% for _ in range(host_rating|round|int) %}★{% endfor %}
+            {% for _ in range(5 - host_rating|round|int) %}☆{% endfor %}
+          </div>
+          <span class="rating-count">({{ host_ratings|length }} ratings)</span>
+          
+          <h4>Recent Host Reviews</h4>
+          {% for rating in host_ratings[:5] %}
+            <div class="rating-item">
+              <div class="rating-stars">
+                {% for _ in range(rating.rating) %}★{% endfor %}
+                {% for _ in range(5 - rating.rating) %}☆{% endfor %}
+              </div>
+              {% if rating.comment %}
+                <div class="rating-comment">"{{ rating.comment }}"</div>
+              {% endif %}
+              <div class="rating-meta">
+                by {{ rating.rater.username }} for 
+                <a href="{{ url_for('meal_details', meal_id=rating.meal.id) }}">meal on {{ rating.meal.time.strftime('%Y-%m-%d') }}</a>
+              </div>
+            </div>
+          {% endfor %}
+        {% else %}
+          <p>No host ratings yet</p>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    {% if user.has_attended_meals() %}
+      <div class="profile-section">
+        <h3>Guest Rating</h3>
+        {% set guest_rating = user.get_guest_rating() %}
+        {% if guest_rating %}
+          <div class="rating-stars">
+            {% for _ in range(guest_rating|round|int) %}★{% endfor %}
+            {% for _ in range(5 - guest_rating|round|int) %}☆{% endfor %}
+          </div>
+          <span class="rating-count">({{ guest_ratings|length }} ratings)</span>
+          
+          <h4>Recent Guest Reviews</h4>
+          {% for rating in guest_ratings[:5] %}
+            <div class="rating-item">
+              <div class="rating-stars">
+                {% for _ in range(rating.rating) %}★{% endfor %}
+                {% for _ in range(5 - rating.rating) %}☆{% endfor %}
+              </div>
+              {% if rating.comment %}
+                <div class="rating-comment">"{{ rating.comment }}"</div>
+              {% endif %}
+              <div class="rating-meta">
+                by {{ rating.rater.username }} for 
+                <a href="{{ url_for('meal_details', meal_id=rating.meal.id) }}">meal on {{ rating.meal.time.strftime('%Y-%m-%d') }}</a>
+              </div>
+            </div>
+          {% endfor %}
+        {% else %}
+          <p>No guest ratings yet</p>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    <div class="profile-section">
+      <h3>Hosted Meals</h3>
+      {% if hosted_meals %}
+        <ul class="meal-list">
+          {% for meal in hosted_meals %}
+            <li class="meal-item">
+              <a href="{{ url_for('meal_details', meal_id=meal.id) }}">
+                Meal at {{ meal.location }} on {{ meal.time.strftime('%Y-%m-%d %H:%M') }}
+              </a>
+              ({{ meal.get_guest_count() }}/{{ meal.max_guests }} guests)
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p>No meals hosted yet</p>
+      {% endif %}
+    </div>
+
+    <a href="{{ url_for('browse_meals') }}" class="button">← Back to Meals</a>
+  </div>
+</body>
+</html> 
