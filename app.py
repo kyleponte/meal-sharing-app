@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 from werkzeug.security import generate_password_hash, check_password_hash
 import os
 from functools import wraps
+from sqlalchemy import or_
 
 load_dotenv()
 
@@ -254,7 +255,21 @@ def post_meal():
 
 @app.route('/browse-meals')
 def browse_meals():
-    meals = Meal.query.all()
+    search_query = request.args.get('search', '').strip()
+    meals = Meal.query
+
+    if search_query:
+        # Search in meal name, description, location, and host's username
+        meals = meals.join(User, Meal.host_id == User.id).filter(
+            db.or_(
+                Meal.name.ilike(f'%{search_query}%'),
+                Meal.description.ilike(f'%{search_query}%'),
+                Meal.location.ilike(f'%{search_query}%'),
+                User.username.ilike(f'%{search_query}%')
+            )
+        )
+    
+    meals = meals.all()
     user_id = session.get('user_id')
 
     def meal_sort_key(meal):
@@ -274,7 +289,7 @@ def browse_meals():
         # No user logged in, just sort all meals
         sorted_meals = sorted(meals, key=meal_sort_key)
 
-    return render_template('browse_meals.html', meals=sorted_meals)
+    return render_template('browse_meals.html', meals=sorted_meals, search_query=search_query)
 
 @app.route('/delete-meal/<int:meal_id>', methods=['POST'])
 @login_required
